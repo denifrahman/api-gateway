@@ -1,26 +1,35 @@
 import { Injectable } from '@nestjs/common';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
+import { ClientProxy, ClientProxyFactory, Transport } from "@nestjs/microservices";
 
 @Injectable()
 export class ReportService {
-  create(createReportDto: CreateReportDto) {
-    return 'This action adds a new report';
+  clientProxy: ClientProxy;
+
+  constructor() {
+    this.clientProxy = ClientProxyFactory.create({
+      transport: Transport.RMQ,
+      options: {
+        urls: ["amqp://localhost:5672"],
+        queue: "main_queue",
+        noAck: false,
+        queueOptions: {
+          durable: false
+        }
+      }
+    });
   }
 
-  findAll() {
-    return `This action returns all report`;
+  margin(type= 'DAY') {
+    return this.clientProxy.send('margin', type);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} report`;
+  transaction(type= 'DAY') {
+    return this.clientProxy.send('transaction', type);
   }
 
-  update(id: number, updateReportDto: UpdateReportDto) {
-    return `This action updates a #${id} report`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} report`;
+  customer(type= 'DAY') {
+    return this.clientProxy.send('customer', type);
   }
 }

@@ -6,6 +6,9 @@
 
 this API GATEWAY ( created with nestjs microservice (RABBITMQ))
 
+first install rabbitmq use docker
+https://hub.docker.com/_/rabbitmq
+
 ## Installation
 
 ```bash

@@ -1,26 +1,32 @@
-import { Injectable } from '@nestjs/common';
-import { CreateProductPurchaseDto } from './dto/create-product-purchase.dto';
-import { UpdateProductPurchaseDto } from './dto/update-product-purchase.dto';
+import { Injectable } from "@nestjs/common";
+import { CreateProductPurchaseDto } from "./dto/create-product-purchase.dto";
+import { UpdateProductPurchaseDto } from "./dto/update-product-purchase.dto";
+import { ClientProxy, ClientProxyFactory, Transport } from "@nestjs/microservices";
+import { CreateProductDto } from "../product/dto/create-product.dto";
 
 @Injectable()
 export class ProductPurchaseService {
+  clientProxy: ClientProxy;
+
+  constructor() {
+    this.clientProxy = ClientProxyFactory.create({
+      transport: Transport.RMQ,
+      options: {
+        urls: ["amqp://localhost:5672"],
+        queue: "main_queue",
+        noAck: false,
+        queueOptions: {
+          durable: false
+        }
+      }
+    });
+  }
+
   create(createProductPurchaseDto: CreateProductPurchaseDto) {
-    return 'This action adds a new productPurchase';
+    return this.clientProxy.send<CreateProductDto>("createProductPurchase", createProductPurchaseDto);
   }
 
-  findAll() {
-    return `This action returns all productPurchase`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} productPurchase`;
-  }
-
-  update(id: number, updateProductPurchaseDto: UpdateProductPurchaseDto) {
-    return `This action updates a #${id} productPurchase`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} productPurchase`;
+  async findAll(param = { page: 0, size: 10 }) {
+    return await this.clientProxy.send("findAllProductPurchase", param);
   }
 }

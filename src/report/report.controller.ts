@@ -2,33 +2,29 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { ReportService } from './report.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
+import { ApiTags } from "@nestjs/swagger";
 
 @Controller('report')
+@ApiTags('report')
 export class ReportController {
   constructor(private readonly reportService: ReportService) {}
 
-  @Post()
-  create(@Body() createReportDto: CreateReportDto) {
-    return this.reportService.create(createReportDto);
+  @Get(':type')
+  margin(@Param('type')  type:string) {
+    return this.reportService.margin(type);
   }
 
-  @Get()
-  findAll() {
-    return this.reportService.findAll();
+
+  @Get('/transaction/:type')
+  transaction(@Param('type')  type:string) {
+    return this.reportService.transaction(type);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.reportService.findOne(+id);
+
+  @Get('/customer/:type')
+  customer(@Param('type')  type:string) {
+    return this.reportService.customer(type);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateReportDto: UpdateReportDto) {
-    return this.reportService.update(+id, updateReportDto);
-  }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.reportService.remove(+id);
-  }
 }

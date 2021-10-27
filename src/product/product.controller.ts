@@ -1,34 +1,69 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { ProductService } from './product.service';
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  HttpStatus,
+  UseInterceptors,
+  UploadedFile, Req, Res
+} from "@nestjs/common";
+import { ProductService } from "./product.service";
+import { CreateProductDto } from "./dto/create-product.dto";
+import { UpdateProductDto } from "./dto/update-product.dto";
+import { ApiConsumes, ApiTags } from "@nestjs/swagger";
+import { ResponseJson } from "../utils/response";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { editFileName, imageFileFilter } from "../utils/file-upload.utils";
+import { diskStorage } from "multer";
 
-@Controller('product')
+@Controller("product")
+@ApiTags("product")
 export class ProductController {
-  constructor(private readonly productService: ProductService) {}
+  constructor(private readonly productService: ProductService) {
+  }
 
   @Post()
-  create(@Body() createProductDto: CreateProductDto) {
-    return this.productService.create(createProductDto);
+  @ApiConsumes("multipart/form-data")
+  @UseInterceptors(
+    FileInterceptor("image", {
+      storage: diskStorage({
+        destination: "./uploads/foto/product",
+        filename: editFileName
+      }),
+      fileFilter: imageFileFilter
+    })
+  )
+  async create(@Body() createProductDto: CreateProductDto, @UploadedFile() image, @Req
+  () req) {
+    console.log(image);
+    if (image !== undefined) {
+      createProductDto.image =
+        "http://" +
+        req.headers.host +
+        req["path"] +
+        "/image/" +
+        image.filename;
+    }
+    console.log(createProductDto);
+    return await this.productService.create(createProductDto);
+  }
+
+  @Get("image/:id")
+  async getFoto(@Param("id") id: string, @Res() res): Promise<any> {
+    console.log(id);
+
+    res.sendFile(id, { root: "uploads/foto/product" });
   }
 
   @Get()
-  findAll() {
-    return this.productService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productService.update(+id, updateProductDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.productService.remove(+id);
+  async findAll(
+    @Query("page") page: number,
+    @Query("size") size: number
+  ) {
+    return this.productService.findAll({ page: page, size: size });
   }
 }
