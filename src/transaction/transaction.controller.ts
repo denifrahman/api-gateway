@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from "@nestjs/common";
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, HttpStatus } from "@nestjs/common";
 import { TransactionService } from './transaction.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { ApiTags } from "@nestjs/swagger";
 import { UpdateTransactionStatusDto } from "./dto/update-transaction-status.dto";
+import { ResponseJson } from "../utils/response";
 
 @Controller('transaction')
 @ApiTags('transaction')
@@ -11,8 +12,12 @@ export class TransactionController {
   constructor(private readonly transactionService: TransactionService) {}
 
   @Post()
-  create(@Body() createTransactionDto: CreateTransactionDto) {
-    return this.transactionService.create(createTransactionDto);
+  async create(@Body() createTransactionDto: CreateTransactionDto) {
+    let response = new ResponseJson();
+    await this.transactionService.create(createTransactionDto);
+    response.statusCode = HttpStatus.OK;
+    response.message = "Trasaction proses";
+    return response;
   }
 
   @Get()

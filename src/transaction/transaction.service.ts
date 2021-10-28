@@ -24,7 +24,7 @@ export class TransactionService {
   }
 
   create(createTransactionDto: CreateTransactionDto) {
-    return this.clientProxy.send<CreateProductDto>("createTransaction", createTransactionDto);
+    return this.clientProxy.emit<CreateProductDto>("createTransaction", createTransactionDto);
     ;
   }
 
